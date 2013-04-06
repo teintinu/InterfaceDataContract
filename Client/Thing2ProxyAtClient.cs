@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Client
 {
     [DataContract(Namespace = MyProxyProvider.MyNamespace, Name = "Thing2", IsReference = false)]
-    internal class Thing2ProxyAtClient : Thing2, INotifyPropertyChanged // WPF bindings
+    public class Thing2ProxyAtClient : Thing2, INotifyPropertyChanged // WPF bindings
     {
 
         public event PropertyChangedEventHandler PropertyChanged;

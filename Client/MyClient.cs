@@ -39,6 +39,7 @@ namespace Client
 
         public SERVICE Invoke<SERVICE>()
         {
+            XHelper.IsClient = true;
             String uri = "http://" + host + ":" + port + "/" + typeof(SERVICE).FullName.Replace('.', '/');
             ChannelFactory<SERVICE> factory = new ChannelFactory<SERVICE>(new WSHttpBinding(), new EndpointAddress(uri));
 
@@ -61,6 +62,7 @@ namespace Client
                 }
 
             SERVICE proxy = factory.CreateChannel();
+            XHelper.IsClient = false;
             return proxy;
         }
 

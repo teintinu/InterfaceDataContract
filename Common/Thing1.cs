@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Common
 {
-    public interface Thing1: BaseForThings
+    public interface Thing1 : BaseForThings
     {
         Int32 Id { get; set; }
         String Name { get; set; }

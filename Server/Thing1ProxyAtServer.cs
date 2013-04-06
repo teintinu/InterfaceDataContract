@@ -11,11 +11,22 @@ using Server;
 namespace Server
 {
     [DataContract(Namespace = MyProxyProvider.MyNamespace, Name = "Thing1", IsReference = false)]
-    internal class Thing1ProxyAtServer : Thing1 // MongoDB (or another) persistence
+    public class Thing1ProxyAtServer : Thing1 // MongoDB (or another) persistence
     {
-        BsonDocument bsonDoc = new BsonDocument();
 
-        [DataMember(Name="Id")]
+        private BsonDocument _bsonDoc;
+
+        private BsonDocument bsonDoc
+        {
+            get
+            {
+                if (_bsonDoc == null)
+                    _bsonDoc = new BsonDocument();
+                return _bsonDoc;
+            }
+        }
+
+        [DataMember(Name = "Id")]
         public Int32 Id
         {
             get
@@ -28,7 +39,7 @@ namespace Server
             }
         }
 
-        [DataMember(Name="Name")]
+        [DataMember(Name = "Name")]
         public String Name
         {
             get
@@ -41,7 +52,7 @@ namespace Server
             }
         }
 
-        [DataMember(Name="AnotherThing")]
+        [DataMember(Name = "AnotherThing")]
         public ThingN AnotherThing
         {
             get

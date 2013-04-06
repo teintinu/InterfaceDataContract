@@ -10,10 +10,16 @@ namespace TestCases
     [TestClass]
     public class MyTestCases
     {
+        [AssemblyInitialize]
+        public static void TestInitialize(TestContext pContext)
+        {
+            XHelper.ClientTypes = new Type[] { typeof(Thing1ProxyAtClient), typeof(Thing2ProxyAtClient), typeof(Thing2ProxyAtClient) };
+            XHelper.ServerTypes = new Type[] { typeof(Thing1ProxyAtServer), typeof(Thing2ProxyAtServer), typeof(ThingNProxyAtServer) };
+        }
+
         [TestMethod]
         public void Simple()
         {
-            // that test don't works
             using (MyServer server = MyServer.CreateSimpleServer("127.0.0.1", "8088"))
             {
                 Thread.Sleep(500);
