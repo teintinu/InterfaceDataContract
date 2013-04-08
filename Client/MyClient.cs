@@ -39,30 +39,34 @@ namespace Client
 
         public SERVICE Invoke<SERVICE>()
         {
-            XHelper.IsClient = true;
             String uri = "http://" + host + ":" + port + "/" + typeof(SERVICE).FullName.Replace('.', '/');
             ChannelFactory<SERVICE> factory = new ChannelFactory<SERVICE>(new WSHttpBinding(), new EndpointAddress(uri));
 
-            if (mode == 1)
+            if (mode == 0)
                 foreach (var op in factory.Endpoint.Contract.Operations)
-                {
-                    var sb = op.Behaviors.Find<System.ServiceModel.Description.DataContractSerializerOperationBehavior>();
-                    if (sb != null)
+                    foreach (var t in KnownTypes())
+                        op.KnownTypes.Add(t);
+            else
+
+                if (mode == 1)
+                    foreach (var op in factory.Endpoint.Contract.Operations)
+                    {
+                        var sb = op.Behaviors.Find<System.ServiceModel.Description.DataContractSerializerOperationBehavior>();
+                        if (sb != null)
+                            sb.DataContractResolver = new MyDataContractResolver(this);
+                    }
+                else if (mode == 2)
+                    foreach (var op in factory.Endpoint.Contract.Operations)
+                    {
+                        var sb = op.Behaviors.Find<System.ServiceModel.Description.DataContractSerializerOperationBehavior>();
+                        if (sb != null)
+                            op.Behaviors.Remove(sb);
+                        sb = new MyDataContractSerializerBehavior(op, this);
                         sb.DataContractResolver = new MyDataContractResolver(this);
-                }
-            else if (mode == 2)
-                foreach (var op in factory.Endpoint.Contract.Operations)
-                {
-                    var sb = op.Behaviors.Find<System.ServiceModel.Description.DataContractSerializerOperationBehavior>();
-                    if (sb != null)
-                        op.Behaviors.Remove(sb);
-                    sb = new MyDataContractSerializerBehavior(op, this);
-                    sb.DataContractResolver = new MyDataContractResolver(this);
-                    op.Behaviors.Add(sb);
-                }
+                        op.Behaviors.Add(sb);
+                    }
 
             SERVICE proxy = factory.CreateChannel();
-            XHelper.IsClient = false;
             return proxy;
         }
 

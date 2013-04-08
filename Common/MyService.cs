@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 namespace Common
 {
     [ServiceContract(Namespace = MyProxyProvider.MyNamespace)]
-    [ServiceKnownType("GetKnownTypes", typeof(XHelper))]
     public interface MyService
     {
         [OperationContract]

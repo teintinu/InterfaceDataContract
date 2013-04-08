@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.ServiceModel.Description;
 using System.Text;
@@ -40,60 +41,48 @@ namespace Server
         private ServiceHost servicehost;
         private ServiceEndpoint endpoint;
 
-        private static MyServer Open(Func<MyServer> pOpenEvent)
-        {
-            XHelper.IsClient = false;
-            MyServer ret = pOpenEvent();
-            XHelper.IsClient = null;
-            return ret;
-        }
-
         public static MyServer CreateSimpleServer(String host, String port)
         {
-            return Open(delegate()
-                {
-                    MyServiceImplementation impl = new MyServiceImplementation();
-                    MyServer srv = new MyServer(typeof(MyService), impl, host, port);
-                    srv.servicehost.Open();
-                    return srv;
-                });
+            // DataContractSerializer
+            MyServiceImplementation impl = new MyServiceImplementation();
+            MyServer srv = new MyServer(typeof(MyService), impl, host, port);
+            foreach (var op in srv.endpoint.Contract.Operations)
+                foreach (var t in impl.KnownTypes())
+                    op.KnownTypes.Add(t);
+            srv.servicehost.Open();
+            return srv;
         }
 
         public static MyServer CreateServerWithDataContractResolver(String host, String port)
         {
-            return Open(delegate()
+            MyServiceImplementation impl = new MyServiceImplementation();
+            MyServer srv = new MyServer(typeof(MyService), impl, host, port);
+            foreach (var op in srv.endpoint.Contract.Operations)
             {
-                MyServiceImplementation impl = new MyServiceImplementation();
-                MyServer srv = new MyServer(typeof(MyService), impl, host, port);
-                foreach (var op in srv.endpoint.Contract.Operations)
-                {
-                    var sb = op.Behaviors.Find<System.ServiceModel.Description.DataContractSerializerOperationBehavior>();
-                    sb.DataContractResolver = new MyDataContractResolver(impl);
-                }
-                srv.servicehost.Open();
-                return srv;
-            });
+                var sb = op.Behaviors.Find<System.ServiceModel.Description.DataContractSerializerOperationBehavior>();
+                sb.DataContractResolver = new MyDataContractResolver(impl);
+            }
+            srv.servicehost.Open();
+            return srv;
         }
 
         public static MyServer CreateServerWithDataContractSerializerOperationBehavior(String host, String port)
         {
-            return Open(delegate()
+            MyServiceImplementation impl = new MyServiceImplementation();
+            MyServer srv = new MyServer(typeof(MyService), impl, host, port);
+            foreach (var op in srv.endpoint.Contract.Operations)
             {
-                MyServiceImplementation impl = new MyServiceImplementation();
-                MyServer srv = new MyServer(typeof(MyService), impl, host, port);
-                foreach (var op in srv.endpoint.Contract.Operations)
-                {
-                    var sb = op.Behaviors.Find<System.ServiceModel.Description.DataContractSerializerOperationBehavior>();
-                    if (sb != null)
-                        op.Behaviors.Remove(sb);
-                    sb = new MyDataContractSerializerBehavior(op, impl);
-                    sb.DataContractResolver = new MyDataContractResolver(impl);
-                    op.Behaviors.Add(sb);
-                }
-                srv.servicehost.Open();
-                return srv;
-            });
+                var sb = op.Behaviors.Find<System.ServiceModel.Description.DataContractSerializerOperationBehavior>();
+                if (sb != null)
+                    op.Behaviors.Remove(sb);
+                sb = new MyDataContractSerializerBehavior(op, impl);
+                sb.DataContractResolver = new MyDataContractResolver(impl);
+                op.Behaviors.Add(sb);
+            }
+            srv.servicehost.Open();
+            return srv;
         }
+
         public void Dispose()
         {
             servicehost.Close();
